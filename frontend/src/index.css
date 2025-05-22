@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Grundlegende Stile */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  @apply bg-gray-100;
+}
+
+/* GrapesJS Editor Stile */
+.grapesjs-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.editor-panels {
+  display: flex;
+  background-color: #444;
+  color: white;
+  padding: 5px 10px;
+}
+
+.panel__devices,
+.panel__switcher,
+.panel__save {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.editor-sidebar {
+  width: 280px;
+  background-color: #f5f5f5;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+  position: absolute;
+  left: 0;
+  top: 40px;
+  bottom: 0;
+  z-index: 2;
+}
+
+.editor-canvas {
+  position: absolute;
+  left: 280px;
+  top: 40px;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+}
+
+.blocks-container,
+.styles-container {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.styles-container {
+  display: none;
+}
+
+.editor-loading {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 3;
+  font-size: 18px;
+}
+
+/* Anpassungen für GrapesJS-Blöcke */
+.gjs-block {
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.gjs-block:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Anpassungen für den Style-Manager */
+.gjs-sm-sector {
+  margin-bottom: 10px;
+}
+
+.gjs-sm-sector-title {
+  font-weight: 600;
+}
+
+/* Anpassungen für Buttons */
+.btn-save {
+  background-color: #4CAF50;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.btn-save:hover {
+  background-color: #45a049;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+  .editor-sidebar {
+    width: 220px;
+  }
+  
+  .editor-canvas {
+    left: 220px;
+  }
+}
