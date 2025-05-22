@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import GrapesEditor from '../editor/GrapesEditor';
-import AIContentGenerator from '../components/AIContentGenerator';
 
 const EditorPage = () => {
   const { pageId } = useParams();
@@ -10,7 +9,6 @@ const EditorPage = () => {
   const [pageData, setPageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showAiPanel, setShowAiPanel] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
 
   // Seite laden
@@ -25,8 +23,6 @@ const EditorPage = () => {
           html_content: '',
           css_content: '',
           js_content: '',
-          components: '',
-          styles: '',
           is_published: false
         });
         setLoading(false);
@@ -34,11 +30,12 @@ const EditorPage = () => {
       }
 
       try {
+        console.log('📄 Lade Seite mit ID:', pageId);
         const response = await axios.get(`http://localhost:8000/api/pages/${pageId}`);
+        console.log('✅ Seitendaten geladen:', response.data);
         setPageData(response.data);
-        console.log('Seitendaten geladen:', response.data);
       } catch (err) {
-        console.error('Fehler beim Laden der Seite:', err);
+        console.error('❌ Fehler beim Laden der Seite:', err);
         setError(err.response?.data?.detail || err.message || 'Seite konnte nicht geladen werden');
       } finally {
         setLoading(false);
@@ -51,14 +48,13 @@ const EditorPage = () => {
   // Seite speichern
   const handleSave = async (editorContent) => {
     setSaveStatus('saving');
+    console.log('💾 Speichere Seite...', editorContent);
     
     try {
       const updatedPageData = {
         ...pageData,
         ...editorContent
       };
-
-      console.log('Speichere Seite:', updatedPageData);
 
       let response;
       if (pageId && pageId !== 'new') {
@@ -73,49 +69,18 @@ const EditorPage = () => {
 
       setPageData(response.data);
       setSaveStatus('saved');
+      console.log('✅ Seite gespeichert');
       
       // Status nach 3 Sekunden zurücksetzen
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err) {
-      console.error('Fehler beim Speichern der Seite:', err);
+      console.error('❌ Fehler beim Speichern der Seite:', err);
       setSaveStatus('error');
       setError(err.response?.data?.detail || err.message || 'Seite konnte nicht gespeichert werden');
       
       // Fehlerstatus nach 3 Sekunden zurücksetzen
       setTimeout(() => setSaveStatus(null), 3000);
     }
-  };
-
-  // Seite exportieren
-  const handleExport = async () => {
-    if (!pageId || pageId === 'new') {
-      alert('Bitte speichern Sie die Seite zuerst, bevor Sie sie exportieren.');
-      return;
-    }
-
-    try {
-      const response = await axios.post(`http://localhost:8000/api/pages/${pageId}/export`, { create_zip: true });
-      
-      // Download-Link erstellen und klicken
-      window.location.href = `http://localhost:8000/api/pages/${pageId}/download`;
-    } catch (err) {
-      console.error('Fehler beim Exportieren der Seite:', err);
-      alert('Fehler beim Exportieren: ' + (err.response?.data?.detail || err.message));
-    }
-  };
-
-  // KI-generierte Inhalte in den Editor laden
-  const handleContentGenerated = (content) => {
-    console.log('KI-Inhalte erhalten:', content);
-    
-    // Diese Funktion wird an den GrapesEditor weitergegeben
-    // und dort implementiert, um die generierten Inhalte zu laden
-    if (window.editor && window.editor.loadAiContent) {
-      window.editor.loadAiContent(content);
-    }
-    
-    // KI-Panel nach erfolgreicher Generierung schließen
-    setShowAiPanel(false);
   };
 
   if (loading) {
@@ -171,26 +136,6 @@ const EditorPage = () => {
         
         <div className="flex space-x-2">
           <button 
-            onClick={() => setShowAiPanel(!showAiPanel)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded flex items-center"
-          >
-            <span className="mr-2">KI-Inhalte</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-            </svg>
-          </button>
-          
-          <button 
-            onClick={handleExport}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center"
-          >
-            <span className="mr-2">Exportieren</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
-          
-          <button 
             onClick={() => navigate('/pages')}
             className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
           >
@@ -199,35 +144,12 @@ const EditorPage = () => {
         </div>
       </header>
       
-      {/* Hauptbereich mit Editor und optionalem KI-Panel */}
-      <div className="flex-grow flex relative overflow-hidden">
-        {/* GrapesJS-Editor */}
-        <div className="flex-grow">
-          <GrapesEditor 
-            pageData={pageData} 
-            onSave={handleSave} 
-          />
-        </div>
-        
-        {/* KI-Panel (einblendbar) */}
-        {showAiPanel && (
-          <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-lg z-10 overflow-y-auto">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-lg font-bold">KI-Inhaltsgenerierung</h2>
-              <button 
-                onClick={() => setShowAiPanel(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="p-4">
-              <AIContentGenerator onContentGenerated={handleContentGenerated} />
-            </div>
-          </div>
-        )}
+      {/* GrapesJS-Editor */}
+      <div className="flex-grow">
+        <GrapesEditor 
+          pageData={pageData} 
+          onSave={handleSave} 
+        />
       </div>
     </div>
   );
