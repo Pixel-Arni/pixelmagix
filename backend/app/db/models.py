@@ -21,7 +21,7 @@ class Page(Base):
     js_content = Column(Text, nullable=True)    # Benutzerdefiniertes JavaScript
     components = Column(Text, nullable=True)    # GrapesJS Komponenten als JSON-String
     styles = Column(Text, nullable=True)        # GrapesJS Stile als JSON-String
-    metadata = Column(JSON, nullable=True)      # Zusätzliche Metadaten (SEO, Plugins, etc.)
+    page_metadata = Column(JSON, nullable=True)  # Zusätzliche Metadaten (SEO, Plugins, etc.) - UMBENANNT!
     is_published = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -43,7 +43,7 @@ class Page(Base):
             "js_content": self.js_content,
             "components": json.loads(self.components) if self.components else None,
             "styles": json.loads(self.styles) if self.styles else None,
-            "metadata": self.metadata,
+            "metadata": self.page_metadata,  # Für API-Kompatibilität zurück zu 'metadata' mappen
             "is_published": self.is_published,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
@@ -93,7 +93,7 @@ class Asset(Base):
     file_type = Column(String(50), nullable=False)  # z.B. 'image', 'video', 'document'
     mime_type = Column(String(100), nullable=True)
     size = Column(Integer, nullable=True)  # Dateigröße in Bytes
-    metadata = Column(JSON, nullable=True)  # Zusätzliche Metadaten
+    asset_metadata = Column(JSON, nullable=True)  # Zusätzliche Metadaten - UMBENANNT!
     created_at = Column(DateTime, default=datetime.utcnow)
     
     def to_dict(self):
@@ -107,7 +107,7 @@ class Asset(Base):
             "file_type": self.file_type,
             "mime_type": self.mime_type,
             "size": self.size,
-            "metadata": self.metadata,
+            "metadata": self.asset_metadata,  # Für API-Kompatibilität zurück zu 'metadata' mappen
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
 

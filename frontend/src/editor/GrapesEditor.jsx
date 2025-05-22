@@ -3,6 +3,7 @@ import grapesjs from 'grapesjs';
 import gjsPresetWebpage from 'grapesjs-preset-webpage';
 import gjsBlocksBasic from 'grapesjs-blocks-basic';
 import 'grapesjs/dist/css/grapes.min.css';
+import './GrapesEditor.css';
 
 const GrapesEditor = ({ pageData, onSave }) => {
   const editorRef = useRef(null);
@@ -13,15 +14,19 @@ const GrapesEditor = ({ pageData, onSave }) => {
   useEffect(() => {
     if (!editorRef.current) return;
 
+    console.log('🎨 GrapesJS Editor wird initialisiert...');
+
     // GrapesJS-Editor erstellen
-    const editor = grapesjs.init({
+    const gjsEditor = grapesjs.init({
       container: editorRef.current,
       height: '100vh',
       width: 'auto',
       storageManager: false,
       plugins: [gjsPresetWebpage, gjsBlocksBasic],
       pluginsOpts: {
-        gjsPresetWebpage: {},
+        gjsPresetWebpage: {
+          blocks: ['link-block', 'quote', 'text-basic'],
+        },
         gjsBlocksBasic: {}
       },
       blockManager: {
@@ -29,6 +34,12 @@ const GrapesEditor = ({ pageData, onSave }) => {
       },
       styleManager: {
         appendTo: '#styles-container'
+      },
+      layerManager: {
+        appendTo: '#layers-container'
+      },
+      traitManager: {
+        appendTo: '#trait-container'
       },
       panels: {
         defaults: [
@@ -42,7 +53,7 @@ const GrapesEditor = ({ pageData, onSave }) => {
               active: true,
               togglable: false,
             }, {
-              id: 'device-tablet',
+              id: 'device-tablet', 
               label: '<i class="fa fa-tablet"></i>',
               command: 'set-device-tablet',
               togglable: false,
@@ -67,6 +78,16 @@ const GrapesEditor = ({ pageData, onSave }) => {
               label: 'Stile',
               command: 'show-styles',
               togglable: false,
+            }, {
+              id: 'show-layers',
+              label: 'Ebenen',
+              command: 'show-layers',
+              togglable: false,
+            }, {
+              id: 'show-traits',
+              label: 'Eigenschaften',
+              command: 'show-traits',
+              togglable: false,
             }]
           },
           {
@@ -75,7 +96,7 @@ const GrapesEditor = ({ pageData, onSave }) => {
             buttons: [{
               id: 'save',
               className: 'btn-save',
-              label: 'Speichern',
+              label: '<i class="fa fa-floppy-o"></i> Speichern',
               command: 'save-page',
               togglable: false,
             }]
@@ -101,19 +122,37 @@ const GrapesEditor = ({ pageData, onSave }) => {
           {
             id: 'show-blocks',
             run: (editor) => {
-              editor.Panels.getButton('views', 'open-blocks').set('active', true);
-              editor.Panels.getButton('views', 'open-styles').set('active', false);
-              editor.Panels.getButton('views', 'open-layers').set('active', false);
-              editor.Panels.getButton('views', 'open-traits').set('active', false);
+              document.getElementById('blocks').style.display = 'block';
+              document.getElementById('styles-container').style.display = 'none';
+              document.getElementById('layers-container').style.display = 'none';
+              document.getElementById('trait-container').style.display = 'none';
             }
           },
           {
-            id: 'show-styles',
+            id: 'show-styles', 
             run: (editor) => {
-              editor.Panels.getButton('views', 'open-blocks').set('active', false);
-              editor.Panels.getButton('views', 'open-styles').set('active', true);
-              editor.Panels.getButton('views', 'open-layers').set('active', false);
-              editor.Panels.getButton('views', 'open-traits').set('active', false);
+              document.getElementById('blocks').style.display = 'none';
+              document.getElementById('styles-container').style.display = 'block';
+              document.getElementById('layers-container').style.display = 'none';
+              document.getElementById('trait-container').style.display = 'none';
+            }
+          },
+          {
+            id: 'show-layers',
+            run: (editor) => {
+              document.getElementById('blocks').style.display = 'none';
+              document.getElementById('styles-container').style.display = 'none';
+              document.getElementById('layers-container').style.display = 'block';
+              document.getElementById('trait-container').style.display = 'none';
+            }
+          },
+          {
+            id: 'show-traits',
+            run: (editor) => {
+              document.getElementById('blocks').style.display = 'none';
+              document.getElementById('styles-container').style.display = 'none';
+              document.getElementById('layers-container').style.display = 'none';
+              document.getElementById('trait-container').style.display = 'block';
             }
           },
           {
@@ -131,6 +170,7 @@ const GrapesEditor = ({ pageData, onSave }) => {
           {
             id: 'save-page',
             run: (editor) => {
+              console.log('💾 Seite wird gespeichert...');
               const html = editor.getHtml();
               const css = editor.getCss();
               const js = editor.getJs ? editor.getJs() : '';
@@ -153,25 +193,27 @@ const GrapesEditor = ({ pageData, onSave }) => {
     });
 
     // Editor-Instanz speichern
-    setEditor(editor);
+    setEditor(gjsEditor);
 
     // Wenn pageData vorhanden ist, Inhalte laden
     if (pageData) {
+      console.log('📄 Lade Seitendaten:', pageData.title);
+      
       if (pageData.components) {
         try {
           const components = typeof pageData.components === 'string' 
             ? JSON.parse(pageData.components) 
             : pageData.components;
-          editor.setComponents(components);
+          gjsEditor.setComponents(components);
         } catch (e) {
-          console.error('Fehler beim Laden der Komponenten:', e);
+          console.error('❌ Fehler beim Laden der Komponenten:', e);
           // Fallback: HTML-Inhalt laden
           if (pageData.html_content) {
-            editor.setComponents(pageData.html_content);
+            gjsEditor.setComponents(pageData.html_content);
           }
         }
       } else if (pageData.html_content) {
-        editor.setComponents(pageData.html_content);
+        gjsEditor.setComponents(pageData.html_content);
       }
 
       if (pageData.styles) {
@@ -179,39 +221,50 @@ const GrapesEditor = ({ pageData, onSave }) => {
           const styles = typeof pageData.styles === 'string' 
             ? JSON.parse(pageData.styles) 
             : pageData.styles;
-          editor.setStyle(styles);
+          gjsEditor.setStyle(styles);
         } catch (e) {
-          console.error('Fehler beim Laden der Stile:', e);
+          console.error('❌ Fehler beim Laden der Stile:', e);
           // Fallback: CSS-Inhalt laden
           if (pageData.css_content) {
-            editor.setStyle(pageData.css_content);
+            gjsEditor.setStyle(pageData.css_content);
           }
         }
       } else if (pageData.css_content) {
-        editor.setStyle(pageData.css_content);
+        gjsEditor.setStyle(pageData.css_content);
       }
     }
 
+    // Globale Editor-Referenz für KI-Integration
+    window.editor = gjsEditor;
+
     setLoading(false);
+    console.log('✅ GrapesJS Editor erfolgreich initialisiert');
 
     // Aufräumen beim Unmounten
     return () => {
-      editor.destroy();
+      console.log('🧹 GrapesJS Editor wird aufgeräumt');
+      gjsEditor.destroy();
+      window.editor = null;
     };
   }, [pageData, onSave]);
 
   // KI-generierte Inhalte laden
   const loadAiContent = (content) => {
-    if (!editor) return;
+    if (!editor) {
+      console.warn('⚠️ Editor nicht verfügbar für KI-Inhalt');
+      return;
+    }
+
+    console.log('🤖 Lade KI-generierte Inhalte:', content);
 
     // Beispiel für das Hinzufügen eines Hero-Abschnitts
     const heroSection = `
-      <section class="hero">
-        <div class="container">
-          <h1>${content.headline || 'Willkommen'}</h1>
-          <h2>${content.subheadline || 'Unterüberschrift'}</h2>
-          <p>${content.intro_text || 'Einleitungstext'}</p>
-          <a href="${content.cta_primary?.action || '#'}" class="btn btn-primary">
+      <section class="hero" style="padding: 80px 0; text-align: center; background-color: #f8f9fa;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+          <h1 style="font-size: 2.5rem; margin-bottom: 20px;">${content.headline || 'Willkommen'}</h1>
+          <h2 style="font-size: 1.5rem; margin-bottom: 30px; color: #6c757d;">${content.subheadline || 'Unterüberschrift'}</h2>
+          <p style="font-size: 1.1rem; margin-bottom: 40px;">${content.intro_text || 'Einleitungstext'}</p>
+          <a href="${content.cta_primary?.action || '#'}" class="btn btn-primary" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
             ${content.cta_primary?.text || 'Jetzt starten'}
           </a>
         </div>
@@ -219,12 +272,12 @@ const GrapesEditor = ({ pageData, onSave }) => {
     `;
 
     // Features-Abschnitt
-    let featuresHtml = '<section class="features"><div class="container"><div class="row">';
+    let featuresHtml = '<section class="features" style="padding: 60px 0; background-color: #fff;"><div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;"><div class="row" style="display: flex; flex-wrap: wrap; margin: 0 -15px;">';
     if (content.features && Array.isArray(content.features)) {
       content.features.forEach(feature => {
         featuresHtml += `
-          <div class="feature-item">
-            <h3>${feature.title || 'Feature'}</h3>
+          <div class="feature-item" style="flex: 1 0 30%; margin: 15px; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center;">
+            <h3 style="margin-bottom: 15px;">${feature.title || 'Feature'}</h3>
             <p>${feature.description || 'Beschreibung'}</p>
           </div>
         `;
@@ -234,60 +287,42 @@ const GrapesEditor = ({ pageData, onSave }) => {
 
     // Testimonial-Abschnitt
     const testimonialSection = content.testimonial ? `
-      <section class="testimonial">
-        <div class="container">
-          <blockquote>
-            <p>${content.testimonial.text || ''}</p>
-            <cite>${content.testimonial.author || ''}, ${content.testimonial.position || ''}</cite>
+      <section class="testimonial" style="padding: 60px 0; background-color: #f8f9fa; text-align: center;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+          <blockquote style="font-style: italic; font-size: 1.2rem; max-width: 800px; margin: 0 auto;">
+            <p style="margin-bottom: 20px;">"${content.testimonial.text || ''}"</p>
+            <cite style="display: block; font-weight: bold;">${content.testimonial.author || ''}, ${content.testimonial.position || ''}</cite>
           </blockquote>
         </div>
       </section>
     ` : '';
 
-    // Abschluss-Abschnitt
-    const closingSection = content.closing_text ? `
-      <section class="closing">
-        <div class="container">
-          <p>${content.closing_text}</p>
-          <a href="#kontakt" class="btn btn-secondary">Kontakt aufnehmen</a>
-        </div>
-      </section>
-    ` : '';
-
     // Alles zusammenfügen und in den Editor laden
-    const fullContent = heroSection + featuresHtml + testimonialSection + closingSection;
+    const fullContent = heroSection + featuresHtml + testimonialSection;
     editor.setComponents(fullContent);
 
-    // Grundlegende Stile hinzufügen
-    const basicStyles = `
-      body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; }
-      .container { width: 90%; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-      .hero { padding: 80px 0; text-align: center; background-color: #f8f9fa; }
-      .hero h1 { font-size: 2.5rem; margin-bottom: 20px; }
-      .hero h2 { font-size: 1.5rem; margin-bottom: 30px; color: #6c757d; }
-      .features { padding: 60px 0; background-color: #fff; }
-      .row { display: flex; flex-wrap: wrap; margin: 0 -15px; }
-      .feature-item { flex: 1 0 30%; margin: 15px; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-      .testimonial { padding: 60px 0; background-color: #f8f9fa; text-align: center; }
-      .testimonial blockquote { font-style: italic; max-width: 800px; margin: 0 auto; }
-      .testimonial cite { display: block; margin-top: 20px; font-weight: bold; }
-      .closing { padding: 80px 0; text-align: center; background-color: #343a40; color: #fff; }
-      .btn { display: inline-block; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: bold; }
-      .btn-primary { background-color: #007bff; color: white; }
-      .btn-secondary { background-color: #6c757d; color: white; }
-      @media (max-width: 768px) {
-        .feature-item { flex: 1 0 100%; }
-        .hero h1 { font-size: 2rem; }
-      }
-    `;
-    editor.setStyle(basicStyles);
+    console.log('✅ KI-Inhalte erfolgreich geladen');
   };
+
+  // Globale loadAiContent-Funktion verfügbar machen
+  React.useEffect(() => {
+    if (editor) {
+      window.editor.loadAiContent = loadAiContent;
+    }
+  }, [editor]);
+
+  if (loading) {
+    return (
+      <div className="editor-loading">
+        <div className="spinner"></div>
+        <p>GrapesJS Editor wird geladen...</p>
+      </div>
+    );
+  }
 
   // Editor-Komponente rendern
   return (
     <div className="grapesjs-editor-container">
-      {loading && <div className="editor-loading">Editor wird geladen...</div>}
-      
       <div className="editor-panels">
         <div className="panel__devices"></div>
         <div className="panel__switcher"></div>
@@ -296,7 +331,9 @@ const GrapesEditor = ({ pageData, onSave }) => {
       
       <div className="editor-sidebar">
         <div id="blocks" className="blocks-container"></div>
-        <div id="styles-container" className="styles-container"></div>
+        <div id="styles-container" className="styles-container" style={{display: 'none'}}></div>
+        <div id="layers-container" className="layers-container" style={{display: 'none'}}></div>
+        <div id="trait-container" className="trait-container" style={{display: 'none'}}></div>
       </div>
       
       <div ref={editorRef} className="editor-canvas"></div>
