@@ -1,489 +1,439 @@
-import React, { useState, useEffect } from 'react';
-import './AIModelManager.css';
+import React, { useState } from 'react';
+import axios from 'axios';
 
-const AIModelManager = () => {
-  const [models, setModels] = useState([]);
-  const [templates, setTemplates] = useState([]);
-  const [loading, setLoading] = useState(true);
+const AIContentGenerator = ({ onContentGenerated }) => {
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showModelForm, setShowModelForm] = useState(false);
-  const [showTemplateForm, setShowTemplateForm] = useState(false);
-  const [selectedModel, setSelectedModel] = useState(null);
-  
-  // Formularstatus für neues Modell
-  const [newModel, setNewModel] = useState({
-    name: '',
-    model_type: 'text',
-    provider: 'local',
-    model_path: '',
-    config: {}
-  });
-  
-  // Formularstatus für neue Vorlage
-  const [newTemplate, setNewTemplate] = useState({
-    name: '',
-    description: '',
-    model_id: '',
-    template_type: 'page',
-    prompt_template: '',
-    output_format: {}
+  const [activeStep, setActiveStep] = useState(1);
+  const [formData, setFormData] = useState({
+    target_audience: '',
+    industry: '',
+    page_goal: '',
+    additional_info: '',
+    company_name: '',
+    brand_colors: '',
+    tone: 'professional'
   });
 
-  // Daten beim Laden der Komponente abrufen
-  useEffect(() => {
-    fetchModels();
-    fetchTemplates();
-  }, []);
+  const steps = [
+    {
+      id: 1,
+      title: 'Grundlagen',
+      description: 'Zielgruppe und Branche definieren'
+    },
+    {
+      id: 2,
+      title: 'Ziele',
+      description: 'Seitenziel und Tonalität festlegen'
+    },
+    {
+      id: 3,
+      title: 'Details',
+      description: 'Zusätzliche Informationen'
+    }
+  ];
 
-  // KI-Modelle abrufen
-  const fetchModels = async () => {
+  const industries = [
+    'Technologie & IT',
+    'E-Commerce & Handel',
+    'Gesundheit & Medizin',
+    'Bildung & Training',
+    'Finanzdienstleistungen',
+    'Immobilien',
+    'Restaurant & Gastronomie',
+    'Fitness & Sport',
+    'Handwerk & Dienstleistungen',
+    'Beratung & Coaching',
+    'Kreativ & Design',
+    'Automotive',
+    'Tourismus & Reisen',
+    'Non-Profit',
+    'Sonstiges'
+  ];
+
+  const pageGoals = [
+    { value: 'lead_generation', label: 'Lead-Generierung', description: 'Kontaktdaten sammeln' },
+    { value: 'sales', label: 'Verkauf', description: 'Produkte oder Services verkaufen' },
+    { value: 'information', label: 'Information', description: 'Über Unternehmen informieren' },
+    { value: 'newsletter', label: 'Newsletter', description: 'Newsletter-Anmeldungen' },
+    { value: 'event', label: 'Event', description: 'Event-Anmeldungen' },
+    { value: 'download', label: 'Download', description: 'Download-Angebote' },
+    { value: 'booking', label: 'Buchung', description: 'Termine oder Services buchen' }
+  ];
+
+  const tones = [
+    { value: 'professional', label: 'Professionell', description: 'Seriös und vertrauenswürdig' },
+    { value: 'friendly', label: 'Freundlich', description: 'Warm und einladend' },
+    { value: 'creative', label: 'Kreativ', description: 'Innovativ und inspirierend' },
+    { value: 'authoritative', label: 'Autoritativ', description: 'Kompetent und überzeugend' },
+    { value: 'casual', label: 'Locker', description: 'Entspannt und zugänglich' }
+  ];
+
+  // Formularänderungen verarbeiten
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Nächster Schritt
+  const nextStep = () => {
+    if (activeStep < steps.length) {
+      setActiveStep(activeStep + 1);
+    }
+  };
+
+  // Vorheriger Schritt
+  const prevStep = () => {
+    if (activeStep > 1) {
+      setActiveStep(activeStep - 1);
+    }
+  };
+
+  // Validierung für aktuellen Schritt
+  const isStepValid = () => {
+    switch (activeStep) {
+      case 1:
+        return formData.target_audience && formData.industry;
+      case 2:
+        return formData.page_goal && formData.tone;
+      case 3:
+        return true; // Optionale Felder
+      default:
+        return false;
+    }
+  };
+
+  // Formular absenden und Inhalte generieren
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
     try {
-      const response = await fetch('/api/ai/models');
-      if (!response.ok) {
-        throw new Error(`Fehler beim Abrufen der KI-Modelle: ${response.statusText}`);
+      const response = await axios.post('/api/ai/generate-landing-page', formData);
+      
+      if (response.data && response.data.content) {
+        // Generierte Inhalte an die übergeordnete Komponente weitergeben
+        if (onContentGenerated) {
+          onContentGenerated(response.data.content);
+        }
+      } else {
+        throw new Error('Keine Inhalte in der Antwort gefunden');
       }
-      const data = await response.json();
-      setModels(data);
     } catch (err) {
-      setError(err.message);
-      console.error('Fehler beim Laden der KI-Modelle:', err);
+      console.error('Fehler bei der Inhaltsgenerierung:', err);
+      setError(err.response?.data?.detail || err.message || 'Ein unbekannter Fehler ist aufgetreten');
     } finally {
       setLoading(false);
     }
   };
 
-  // KI-Vorlagen abrufen
-  const fetchTemplates = async () => {
-    try {
-      const response = await fetch('/api/ai/templates');
-      if (!response.ok) {
-        throw new Error(`Fehler beim Abrufen der KI-Vorlagen: ${response.statusText}`);
-      }
-      const data = await response.json();
-      setTemplates(data);
-    } catch (err) {
-      setError(err.message);
-      console.error('Fehler beim Laden der KI-Vorlagen:', err);
-    }
-  };
-
-  // Neues KI-Modell erstellen
-  const createModel = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/api/ai/models', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newModel)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Fehler beim Erstellen des KI-Modells: ${response.statusText}`);
-      }
-
-      // Formular zurücksetzen und Modelle neu laden
-      setNewModel({
-        name: '',
-        model_type: 'text',
-        provider: 'local',
-        model_path: '',
-        config: {}
-      });
-      setShowModelForm(false);
-      await fetchModels();
-    } catch (err) {
-      setError(err.message);
-      console.error('Fehler beim Erstellen des KI-Modells:', err);
-    }
-  };
-
-  // Neue KI-Vorlage erstellen
-  const createTemplate = async (e) => {
-    e.preventDefault();
-    try {
-      // Ausgabeformat als JSON-Objekt parsen, falls es als String eingegeben wurde
-      let outputFormat = newTemplate.output_format;
-      if (typeof outputFormat === 'string' && outputFormat.trim() !== '') {
-        try {
-          outputFormat = JSON.parse(outputFormat);
-        } catch (parseError) {
-          setError('Ungültiges JSON-Format für das Ausgabeformat');
-          return;
-        }
-      }
-
-      const templateData = {
-        ...newTemplate,
-        output_format: outputFormat
-      };
-
-      const response = await fetch('/api/ai/templates', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(templateData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Fehler beim Erstellen der KI-Vorlage: ${response.statusText}`);
-      }
-
-      // Formular zurücksetzen und Vorlagen neu laden
-      setNewTemplate({
-        name: '',
-        description: '',
-        model_id: '',
-        template_type: 'page',
-        prompt_template: '',
-        output_format: {}
-      });
-      setShowTemplateForm(false);
-      await fetchTemplates();
-    } catch (err) {
-      setError(err.message);
-      console.error('Fehler beim Erstellen der KI-Vorlage:', err);
-    }
-  };
-
-  // Eingabeänderungen für das Modellformular verarbeiten
-  const handleModelChange = (e) => {
-    const { name, value } = e.target;
-    setNewModel(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Eingabeänderungen für das Vorlagenformular verarbeiten
-  const handleTemplateChange = (e) => {
-    const { name, value } = e.target;
-    setNewTemplate(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Konfigurationsänderungen für das Modell verarbeiten
-  const handleConfigChange = (e) => {
-    const { name, value } = e.target;
-    setNewModel(prev => ({
-      ...prev,
-      config: {
-        ...prev.config,
-        [name]: value
-      }
-    }));
-  };
-
-  // Modellformular rendern
-  const renderModelForm = () => {
-    if (!showModelForm) return null;
-
-    return (
-      <div className="ai-form-panel">
-        <div className="ai-form-header">
-          <h3>Neues KI-Modell registrieren</h3>
-          <button className="close-btn" onClick={() => setShowModelForm(false)}>×</button>
-        </div>
-        <div className="ai-form-content">
-          <form onSubmit={createModel}>
-            <div className="form-group">
-              <label htmlFor="name">Name:</label>
+  // Schritt-Inhalt rendern
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="target_audience" className="form-label">
+                Zielgruppe *
+              </label>
               <input
                 type="text"
-                id="name"
-                name="name"
-                value={newModel.name}
-                onChange={handleModelChange}
+                id="target_audience"
+                name="target_audience"
+                value={formData.target_audience}
+                onChange={handleChange}
+                placeholder="z.B. Kleine Unternehmen, Startups, Freelancer"
+                className="form-input"
                 required
               />
+              <p className="form-help">
+                Beschreiben Sie Ihre Zielgruppe so spezifisch wie möglich.
+              </p>
             </div>
-
-            <div className="form-group">
-              <label htmlFor="model_type">Modelltyp:</label>
+            
+            <div>
+              <label htmlFor="industry" className="form-label">
+                Branche *
+              </label>
               <select
-                id="model_type"
-                name="model_type"
-                value={newModel.model_type}
-                onChange={handleModelChange}
+                id="industry"
+                name="industry"
+                value={formData.industry}
+                onChange={handleChange}
+                className="form-select"
                 required
               >
-                <option value="text">Text</option>
-                <option value="image">Bild</option>
-                <option value="combined">Kombiniert</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="provider">Anbieter:</label>
-              <select
-                id="provider"
-                name="provider"
-                value={newModel.provider}
-                onChange={handleModelChange}
-                required
-              >
-                <option value="local">Lokal</option>
-                <option value="openai">OpenAI</option>
-                <option value="huggingface">Hugging Face</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="model_path">Modellpfad:</label>
-              <input
-                type="text"
-                id="model_path"
-                name="model_path"
-                value={newModel.model_path}
-                onChange={handleModelChange}
-                placeholder="Pfad zum lokalen Modell oder API-Endpunkt"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Konfiguration:</label>
-              <div className="config-fields">
-                <div className="config-field">
-                  <input
-                    type="text"
-                    name="max_length"
-                    placeholder="max_length"
-                    value={newModel.config.max_length || ''}
-                    onChange={handleConfigChange}
-                  />
-                </div>
-                <div className="config-field">
-                  <input
-                    type="text"
-                    name="temperature"
-                    placeholder="temperature"
-                    value={newModel.config.temperature || ''}
-                    onChange={handleConfigChange}
-                  />
-                </div>
-                {/* Weitere Konfigurationsfelder können hier hinzugefügt werden */}
-              </div>
-            </div>
-
-            <div className="form-actions">
-              <button type="submit" className="btn primary">Modell registrieren</button>
-              <button type="button" className="btn" onClick={() => setShowModelForm(false)}>Abbrechen</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  };
-
-  // Vorlagenformular rendern
-  const renderTemplateForm = () => {
-    if (!showTemplateForm) return null;
-
-    return (
-      <div className="ai-form-panel">
-        <div className="ai-form-header">
-          <h3>Neue KI-Vorlage erstellen</h3>
-          <button className="close-btn" onClick={() => setShowTemplateForm(false)}>×</button>
-        </div>
-        <div className="ai-form-content">
-          <form onSubmit={createTemplate}>
-            <div className="form-group">
-              <label htmlFor="template-name">Name:</label>
-              <input
-                type="text"
-                id="template-name"
-                name="name"
-                value={newTemplate.name}
-                onChange={handleTemplateChange}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="description">Beschreibung:</label>
-              <textarea
-                id="description"
-                name="description"
-                value={newTemplate.description}
-                onChange={handleTemplateChange}
-                rows="2"
-              ></textarea>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="model_id">KI-Modell:</label>
-              <select
-                id="model_id"
-                name="model_id"
-                value={newTemplate.model_id}
-                onChange={handleTemplateChange}
-                required
-              >
-                <option value="">-- Modell auswählen --</option>
-                {models.map(model => (
-                  <option key={model.id} value={model.id}>
-                    {model.name} ({model.model_type})
+                <option value="">Branche auswählen...</option>
+                {industries.map(industry => (
+                  <option key={industry} value={industry}>
+                    {industry}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="template_type">Vorlagentyp:</label>
-              <select
-                id="template_type"
-                name="template_type"
-                value={newTemplate.template_type}
-                onChange={handleTemplateChange}
-                required
-              >
-                <option value="page">Seite</option>
-                <option value="section">Abschnitt</option>
-                <option value="component">Komponente</option>
-              </select>
+            <div>
+              <label htmlFor="company_name" className="form-label">
+                Unternehmensname
+              </label>
+              <input
+                type="text"
+                id="company_name"
+                name="company_name"
+                value={formData.company_name}
+                onChange={handleChange}
+                placeholder="Name Ihres Unternehmens"
+                className="form-input"
+              />
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="form-label">Ziel der Landingpage *</label>
+              <div className="grid grid-cols-1 gap-3 mt-2">
+                {pageGoals.map(goal => (
+                  <label key={goal.value} className="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <input
+                      type="radio"
+                      name="page_goal"
+                      value={goal.value}
+                      checked={formData.page_goal === goal.value}
+                      onChange={handleChange}
+                      className="mt-1 mr-3 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-900">{goal.label}</div>
+                      <div className="text-sm text-gray-600">{goal.description}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="prompt_template">Prompt-Vorlage:</label>
+            <div>
+              <label className="form-label">Tonalität *</label>
+              <div className="grid grid-cols-1 gap-2 mt-2">
+                {tones.map(tone => (
+                  <label key={tone.value} className="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <input
+                      type="radio"
+                      name="tone"
+                      value={tone.value}
+                      checked={formData.tone === tone.value}
+                      onChange={handleChange}
+                      className="mt-1 mr-3 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-900">{tone.label}</div>
+                      <div className="text-sm text-gray-600">{tone.description}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="additional_info" className="form-label">
+                Zusätzliche Informationen
+              </label>
               <textarea
-                id="prompt_template"
-                name="prompt_template"
-                value={newTemplate.prompt_template}
-                onChange={handleTemplateChange}
-                rows="6"
-                placeholder="Gib hier die Prompt-Vorlage ein. Verwende {variable} für Platzhalter."
-                required
-              ></textarea>
+                id="additional_info"
+                name="additional_info"
+                value={formData.additional_info}
+                onChange={handleChange}
+                rows="4"
+                placeholder="Besondere Merkmale, USPs, wichtige Botschaften..."
+                className="form-textarea"
+              />
+              <p className="form-help">
+                Teilen Sie zusätzliche Details mit, die für Ihre Landingpage wichtig sind.
+              </p>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="output_format">Ausgabeformat (JSON-Schema):</label>
-              <textarea
-                id="output_format"
-                name="output_format"
-                value={typeof newTemplate.output_format === 'object' ? 
-                  JSON.stringify(newTemplate.output_format, null, 2) : 
-                  newTemplate.output_format}
-                onChange={handleTemplateChange}
-                rows="6"
-                placeholder="{
-  "type": "object",
-  "properties": {
-    "title": {"type": "string"},
-    "content": {"type": "string"}
-  }
-}"
-              ></textarea>
+            <div>
+              <label htmlFor="brand_colors" className="form-label">
+                Markenfarben
+              </label>
+              <input
+                type="text"
+                id="brand_colors"
+                name="brand_colors"
+                value={formData.brand_colors}
+                onChange={handleChange}
+                placeholder="z.B. Blau, Weiß, #3B82F6"
+                className="form-input"
+              />
+              <p className="form-help">
+                Geben Sie Ihre Markenfarben an (optional).
+              </p>
             </div>
 
-            <div className="form-actions">
-              <button type="submit" className="btn primary">Vorlage erstellen</button>
-              <button type="button" className="btn" onClick={() => setShowTemplateForm(false)}>Abbrechen</button>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 className="text-sm font-medium text-blue-900">Bereit für die Generierung</h4>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Ihre Eingaben werden verwendet, um eine maßgeschneiderte Landingpage zu erstellen.
+                    Der Vorgang kann 30-60 Sekunden dauern.
+                  </p>
+                </div>
+              </div>
             </div>
-          </form>
-        </div>
-      </div>
-    );
+          </div>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="ai-model-manager">
-      <h2>KI-Modellverwaltung</h2>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+        <h2 className="text-xl font-bold text-white">KI-Inhaltsgenerierung</h2>
+        <p className="text-purple-100 mt-1">
+          Erstellen Sie professionelle Landingpages in wenigen Schritten
+        </p>
+      </div>
 
-      {error && <div className="error-message">{error}</div>}
-
-      {/* KI-Modelle */}
-      <div className="ai-section">
-        <div className="section-header">
-          <h3>KI-Modelle</h3>
-          <button className="btn primary" onClick={() => setShowModelForm(true)}>Neues Modell</button>
-        </div>
-
-        {loading ? (
-          <p>Modelle werden geladen...</p>
-        ) : models.length === 0 ? (
-          <p>Keine KI-Modelle registriert.</p>
-        ) : (
-          <div className="ai-cards">
-            {models.map(model => (
-              <div key={model.id} className={`ai-card ${model.is_active ? 'active' : 'inactive'}`}>
-                <div className="ai-card-header">
-                  <h4>{model.name}</h4>
-                  <span className="ai-card-type">{model.model_type}</span>
-                </div>
-                <div className="ai-card-content">
-                  <p><strong>Anbieter:</strong> {model.provider}</p>
-                  {model.model_path && <p><strong>Pfad:</strong> {model.model_path}</p>}
-                  {model.config && Object.keys(model.config).length > 0 && (
-                    <div className="ai-card-config">
-                      <p><strong>Konfiguration:</strong></p>
-                      <ul>
-                        {Object.entries(model.config).map(([key, value]) => (
-                          <li key={key}>{key}: {value}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
+      {/* Schritt-Anzeige */}
+      <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          {steps.map((step, index) => (
+            <div key={step.id} className="flex items-center flex-1">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                activeStep >= step.id 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-600'
+              }`}>
+                {activeStep > step.id ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  step.id
+                )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* KI-Vorlagen */}
-      <div className="ai-section">
-        <div className="section-header">
-          <h3>KI-Vorlagen</h3>
-          <button 
-            className="btn primary" 
-            onClick={() => setShowTemplateForm(true)}
-            disabled={models.length === 0}
-          >
-            Neue Vorlage
-          </button>
+              <div className="ml-3 flex-1">
+                <p className={`text-sm font-medium ${
+                  activeStep >= step.id ? 'text-gray-900' : 'text-gray-500'
+                }`}>
+                  {step.title}
+                </p>
+                <p className="text-xs text-gray-500">{step.description}</p>
+              </div>
+              {index < steps.length - 1 && (
+                <div className={`flex-1 h-0.5 mx-4 ${
+                  activeStep > step.id ? 'bg-blue-600' : 'bg-gray-200'
+                }`} />
+              )}
+            </div>
+          ))}
         </div>
-
-        {loading ? (
-          <p>Vorlagen werden geladen...</p>
-        ) : templates.length === 0 ? (
-          <p>Keine KI-Vorlagen erstellt.</p>
-        ) : (
-          <div className="ai-cards">
-            {templates.map(template => {
-              const model = models.find(m => m.id === template.model_id);
-              return (
-                <div key={template.id} className="ai-card template">
-                  <div className="ai-card-header">
-                    <h4>{template.name}</h4>
-                    <span className="ai-card-type">{template.template_type}</span>
-                  </div>
-                  <div className="ai-card-content">
-                    {template.description && <p>{template.description}</p>}
-                    <p><strong>Modell:</strong> {model ? model.name : `ID: ${template.model_id}`}</p>
-                    <div className="template-preview">
-                      <p><strong>Prompt-Vorlage:</strong></p>
-                      <pre>{template.prompt_template.length > 100 ? 
-                        template.prompt_template.substring(0, 100) + '...' : 
-                        template.prompt_template}</pre>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
-      {/* Formulare */}
-      {renderModelForm()}
-      {renderTemplateForm()}
+      {/* Fehleranzeige */}
+      {error && (
+        <div className="mx-6 mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-red-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h4 className="text-sm font-medium text-red-900">Fehler bei der Generierung</h4>
+              <p className="text-sm text-red-700 mt-1">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Formular-Inhalt */}
+      <form onSubmit={handleSubmit} className="p-6">
+        {renderStepContent()}
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={prevStep}
+            disabled={activeStep === 1}
+            className="btn btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Zurück
+          </button>
+
+          {activeStep < steps.length ? (
+            <button
+              type="button"
+              onClick={nextStep}
+              disabled={!isStepValid()}
+              className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Weiter
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={loading || !isStepValid()}
+              className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Inhalte werden generiert...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Landingpage erstellen
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </form>
+
+      {/* Loading-Overlay */}
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-95 flex items-center justify-center z-10">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600 font-medium">KI generiert Ihre Landingpage...</p>
+            <p className="text-sm text-gray-500 mt-2">Dies kann einen Moment dauern</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default AIModelManager;
+export default AIContentGenerator;
