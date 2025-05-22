@@ -21,7 +21,7 @@ class Page(Base):
     js_content = Column(Text, nullable=True)    # Benutzerdefiniertes JavaScript
     components = Column(Text, nullable=True)    # GrapesJS Komponenten als JSON-String
     styles = Column(Text, nullable=True)        # GrapesJS Stile als JSON-String
-    page_metadata = Column(JSON, nullable=True)  # Zusätzliche Metadaten (SEO, Plugins, etc.) - UMBENANNT!
+    page_metadata = Column(JSON, nullable=True)  # Zusätzliche Metadaten (SEO, Plugins, etc.)
     is_published = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -41,13 +41,13 @@ class Page(Base):
             "html_content": self.html_content,
             "css_content": self.css_content,
             "js_content": self.js_content,
-            "components": json.loads(self.components) if self.components else None,
-            "styles": json.loads(self.styles) if self.styles else None,
+            "components": self.components,  # Als String lassen für bessere Kompatibilität
+            "styles": self.styles,  # Als String lassen für bessere Kompatibilität
             "metadata": self.page_metadata,  # Für API-Kompatibilität zurück zu 'metadata' mappen
             "is_published": self.is_published,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "sections": [section.to_dict() for section in self.sections]
+            "sections": [section.to_dict() for section in self.sections] if self.sections else []
         }
 
 
@@ -93,7 +93,7 @@ class Asset(Base):
     file_type = Column(String(50), nullable=False)  # z.B. 'image', 'video', 'document'
     mime_type = Column(String(100), nullable=True)
     size = Column(Integer, nullable=True)  # Dateigröße in Bytes
-    asset_metadata = Column(JSON, nullable=True)  # Zusätzliche Metadaten - UMBENANNT!
+    asset_metadata = Column(JSON, nullable=True)  # Zusätzliche Metadaten
     created_at = Column(DateTime, default=datetime.utcnow)
     
     def to_dict(self):
@@ -143,145 +143,4 @@ class Setting(Base):
             "key": self.key,
             "value": self.get_typed_value(),
             "type": self.type
-        }
-
-
-class Plugin(Base):
-    """
-    Modell für Plugins im PixelMagix CMS.
-    """
-    __tablename__ = "plugins"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
-    slug = Column(String(255), unique=True, nullable=False, index=True)
-    description = Column(Text, nullable=True)
-    version = Column(String(50), nullable=False)
-    author = Column(String(255), nullable=True)
-    entry_point = Column(String(255), nullable=False)  # Python-Modul als Einstiegspunkt
-    is_active = Column(Boolean, default=True)
-    config = Column(JSON, nullable=True)  # Plugin-Konfiguration als JSON
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Beziehungen
-    hooks = relationship("PluginHook", back_populates="plugin", cascade="all, delete-orphan")
-    
-    def to_dict(self):
-        """
-        Konvertiert das Plugin-Objekt in ein Dictionary.
-        """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "slug": self.slug,
-            "description": self.description,
-            "version": self.version,
-            "author": self.author,
-            "entry_point": self.entry_point,
-            "is_active": self.is_active,
-            "config": self.config,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "hooks": [hook.to_dict() for hook in self.hooks]
-        }
-
-
-class PluginHook(Base):
-    """
-    Modell für Plugin-Hooks, die bestimmte Aktionen im CMS auslösen können.
-    """
-    __tablename__ = "plugin_hooks"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    plugin_id = Column(Integer, ForeignKey("plugins.id"), nullable=False)
-    hook_name = Column(String(255), nullable=False)  # z.B. 'before_page_save', 'after_page_render'
-    handler = Column(String(255), nullable=False)  # Name der Handler-Funktion im Plugin
-    priority = Column(Integer, default=10)  # Priorität für die Ausführungsreihenfolge
-    
-    # Beziehungen
-    plugin = relationship("Plugin", back_populates="hooks")
-    
-    def to_dict(self):
-        """
-        Konvertiert das PluginHook-Objekt in ein Dictionary.
-        """
-        return {
-            "id": self.id,
-            "plugin_id": self.plugin_id,
-            "hook_name": self.hook_name,
-            "handler": self.handler,
-            "priority": self.priority
-        }
-
-
-class AIModel(Base):
-    """
-    Modell für KI-Modelle zur Inhaltsgenerierung.
-    """
-    __tablename__ = "ai_models"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
-    model_type = Column(String(50), nullable=False)  # z.B. 'text', 'image', 'combined'
-    provider = Column(String(100), nullable=False)  # z.B. 'local', 'openai', 'huggingface'
-    model_path = Column(String(512), nullable=True)  # Pfad zum lokalen Modell oder API-Endpunkt
-    config = Column(JSON, nullable=True)  # Modellkonfiguration als JSON
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Beziehungen
-    templates = relationship("AITemplate", back_populates="model", cascade="all, delete-orphan")
-    
-    def to_dict(self):
-        """
-        Konvertiert das AIModel-Objekt in ein Dictionary.
-        """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "model_type": self.model_type,
-            "provider": self.provider,
-            "model_path": self.model_path,
-            "config": self.config,
-            "is_active": self.is_active,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
-        }
-
-
-class AITemplate(Base):
-    """
-    Modell für KI-Vorlagen zur Inhaltsgenerierung.
-    """
-    __tablename__ = "ai_templates"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    model_id = Column(Integer, ForeignKey("ai_models.id"), nullable=False)
-    template_type = Column(String(50), nullable=False)  # z.B. 'page', 'section', 'component'
-    prompt_template = Column(Text, nullable=False)  # Template für den KI-Prompt
-    output_format = Column(JSON, nullable=True)  # Erwartetes Ausgabeformat als JSON-Schema
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Beziehungen
-    model = relationship("AIModel", back_populates="templates")
-    
-    def to_dict(self):
-        """
-        Konvertiert das AITemplate-Objekt in ein Dictionary.
-        """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "model_id": self.model_id,
-            "template_type": self.template_type,
-            "prompt_template": self.prompt_template,
-            "output_format": self.output_format,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }

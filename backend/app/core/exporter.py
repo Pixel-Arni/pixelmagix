@@ -7,7 +7,6 @@ import logging
 from datetime import datetime
 
 from ..db.models import Page, Asset
-from ..plugins.base import plugin_manager
 
 # Logger konfigurieren
 logging.basicConfig(level=logging.INFO)
@@ -75,9 +74,6 @@ class PageExporter:
         # HTML-Inhalt vorbereiten
         html_content = self._prepare_html_content(page)
         
-        # Plugins die Möglichkeit geben, den HTML-Inhalt zu modifizieren
-        html_content = plugin_manager.process_page_export(html_content, page.to_dict())
-        
         # HTML-Datei erstellen
         html_path = os.path.join(output_dir, "index.html")
         with open(html_path, "w", encoding="utf-8") as f:
@@ -89,7 +85,7 @@ class PageExporter:
             "title": page.title,
             "description": page.description,
             "exported_at": datetime.now().isoformat(),
-            "pixelmagix_version": "1.0.0"  # Hier könnte die tatsächliche Version eingesetzt werden
+            "pixelmagix_version": "1.0.0"
         }
         
         metadata_path = os.path.join(output_dir, "metadata.json")

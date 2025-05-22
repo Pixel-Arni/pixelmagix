@@ -1,69 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
-
-from ..db.database import get_db
-from ..ai.content_generator import content_generator
+from fastapi import APIRouter, HTTPException
+from typing import Dict, Any
 
 router = APIRouter()
 
-@router.get("/models", response_model=Dict[str, Any])
+@router.get("/models")
 async def get_available_models():
     """
     Gibt eine Liste der verfügbaren KI-Modelle zurück.
     """
-    models = content_generator.get_available_models()
-    active_model = content_generator.active_model
-    
     return {
-        "available_models": models,
-        "active_model": active_model
+        "available_models": ["fallback"],
+        "active_model": "fallback"
     }
 
-@router.post("/set-model", response_model=Dict[str, Any])
-async def set_active_model(model_data: Dict[str, str]):
-    """
-    Setzt das aktive KI-Modell.
-    """
-    model_name = model_data.get("model_name")
-    if not model_name:
-        raise HTTPException(status_code=400, detail="Modellname ist erforderlich")
-    
-    success = content_generator.set_active_model(model_name)
-    if not success:
-        raise HTTPException(status_code=404, detail=f"Modell '{model_name}' nicht gefunden")
-    
-    return {
-        "message": f"Aktives Modell auf '{model_name}' gesetzt",
-        "active_model": model_name
-    }
-
-@router.post("/generate-text", response_model=Dict[str, Any])
-async def generate_text(prompt_data: Dict[str, Any]):
-    """
-    Generiert Text mit dem aktiven KI-Modell.
-    """
-    prompt = prompt_data.get("prompt")
-    max_tokens = prompt_data.get("max_tokens", 500)
-    
-    if not prompt:
-        raise HTTPException(status_code=400, detail="Prompt ist erforderlich")
-    
-    if not content_generator.active_model:
-        raise HTTPException(status_code=400, detail="Kein aktives KI-Modell verfügbar")
-    
-    try:
-        model = content_generator.models[content_generator.active_model]
-        generated_text = model.generate_text(prompt, max_tokens)
-        
-        return {
-            "text": generated_text,
-            "model": content_generator.active_model
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Fehler bei der Textgenerierung: {str(e)}")
-
-@router.post("/generate-landing-page", response_model=Dict[str, Any])
+@router.post("/generate-landing-page")
 async def generate_landing_page(params: Dict[str, Any]):
     """
     Generiert Inhalte für eine komplette Landingpage.
@@ -79,42 +29,79 @@ async def generate_landing_page(params: Dict[str, Any]):
             detail="Zielgruppe, Branche und Seitenziel sind erforderlich"
         )
     
-    try:
-        content = content_generator.generate_landing_page_content(
-            target_audience=target_audience,
-            industry=industry,
-            page_goal=page_goal,
-            additional_info=additional_info
-        )
-        
-        return {
-            "content": content,
-            "model": content_generator.active_model
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Fehler bei der Inhaltsgenerierung: {str(e)}")
+    # Einfacher Fallback-Inhaltsgenerator ohne KI
+    # In einer realen Implementierung würde hier ein KI-Modell verwendet
+    content = generate_fallback_content(target_audience, industry, page_goal, additional_info)
+    
+    return {
+        "content": content,
+        "model": "fallback"
+    }
 
-@router.post("/generate-section", response_model=Dict[str, Any])
-async def generate_section(params: Dict[str, Any]):
+def generate_fallback_content(target_audience: str, industry: str, page_goal: str, additional_info: str = "") -> Dict[str, Any]:
     """
-    Generiert Inhalte für einen bestimmten Abschnitt einer Landingpage.
+    Generiert Fallback-Inhalte ohne KI.
     """
-    section_type = params.get("section_type")
-    context = params.get("context", {})
-    
-    if not section_type:
-        raise HTTPException(status_code=400, detail="Abschnittstyp ist erforderlich")
-    
-    try:
-        content = content_generator.generate_section_content(
-            section_type=section_type,
-            context=context
-        )
-        
-        return {
-            "content": content,
-            "section_type": section_type,
-            "model": content_generator.active_model
+    # Dynamische Inhalte basierend auf den Eingaben
+    goal_mapping = {
+        "lead_generation": {
+            "cta_text": "Jetzt kostenlos anfragen",
+            "hero_focus": "Lassen Sie sich unverbindlich beraten"
+        },
+        "sales": {
+            "cta_text": "Jetzt kaufen", 
+            "hero_focus": "Profitieren Sie von unserem Angebot"
+        },
+        "information": {
+            "cta_text": "Mehr erfahren",
+            "hero_focus": "Informieren Sie sich über unsere Lösungen"
+        },
+        "newsletter": {
+            "cta_text": "Jetzt anmelden",
+            "hero_focus": "Bleiben Sie auf dem Laufenden"
+        },
+        "event": {
+            "cta_text": "Jetzt anmelden",
+            "hero_focus": "Sichern Sie sich Ihren Platz"
+        },
+        "download": {
+            "cta_text": "Kostenlos herunterladen",
+            "hero_focus": "Laden Sie unsere Ressourcen herunter"
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Fehler bei der Abschnittsgenerierung: {str(e)}")
+    }
+    
+    goal_info = goal_mapping.get(page_goal, goal_mapping["information"])
+    
+    return {
+        "headline": f"Willkommen bei Ihrer {industry}-Lösung",
+        "subheadline": f"Speziell für {target_audience} entwickelt",
+        "intro_text": f"Wir bieten maßgeschneiderte Lösungen im Bereich {industry}. {goal_info['hero_focus']} und entdecken Sie, wie wir {target_audience} dabei helfen, ihre Ziele zu erreichen.",
+        "features": [
+            {
+                "title": "Expertise",
+                "description": f"Langjährige Erfahrung im Bereich {industry} mit Fokus auf {target_audience}."
+            },
+            {
+                "title": "Maßgeschneidert", 
+                "description": f"Individuelle Lösungen, die perfekt zu den Bedürfnissen von {target_audience} passen."
+            },
+            {
+                "title": "Zuverlässig",
+                "description": "Vertrauen Sie auf unsere bewährten Methoden und professionelle Umsetzung."
+            },
+            {
+                "title": "Support",
+                "description": "Umfassende Betreuung und Support für langfristigen Erfolg."
+            }
+        ],
+        "cta_primary": {
+            "text": goal_info["cta_text"],
+            "action": "#kontakt"
+        },
+        "testimonial": {
+            "text": f"Dank der professionellen Unterstützung konnten wir unsere Ziele im Bereich {industry} erfolgreich erreichen.",
+            "author": "Zufriedener Kunde",
+            "position": f"Geschäftsführer, {target_audience}"
+        },
+        "closing_text": f"Kontaktieren Sie uns noch heute und erfahren Sie, wie wir auch Ihnen im Bereich {industry} helfen können."
+    }

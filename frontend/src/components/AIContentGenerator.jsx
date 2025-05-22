@@ -27,7 +27,10 @@ const AIContentGenerator = ({ onContentGenerated }) => {
     setError(null);
 
     try {
-      const response = await axios.post('/api/ai/generate-landing-page', formData);
+      console.log('Sende KI-Anfrage:', formData);
+      const response = await axios.post('http://localhost:8000/api/ai/generate-landing-page', formData);
+      
+      console.log('KI-Antwort erhalten:', response.data);
       
       if (response.data && response.data.content) {
         // Generierte Inhalte an die übergeordnete Komponente weitergeben

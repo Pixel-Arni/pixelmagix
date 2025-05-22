@@ -9,8 +9,6 @@ from datetime import datetime
 from ..db.database import get_db
 from ..db.models import Page, PageSection
 from ..core.exporter import page_exporter
-from ..plugins.base import plugin_manager
-from ..ai.content_generator import content_generator
 
 router = APIRouter()
 
@@ -63,21 +61,18 @@ async def create_page(page_data: Dict[str, Any], db: Session = Depends(get_db)):
     if "slug" in page_data and db.query(Page).filter(Page.slug == page_data["slug"]).first():
         raise HTTPException(status_code=400, detail="Slug wird bereits verwendet")
     
-    # Plugins die Möglichkeit geben, die Daten zu verarbeiten
-    processed_data = plugin_manager.process_page_save(page_data)
-    
     # Neue Seite erstellen
     new_page = Page(
-        title=processed_data.get("title", "Neue Seite"),
-        slug=processed_data.get("slug", f"page-{datetime.now().strftime('%Y%m%d-%H%M%S')}"),
-        description=processed_data.get("description"),
-        html_content=processed_data.get("html_content"),
-        css_content=processed_data.get("css_content"),
-        js_content=processed_data.get("js_content"),
-        components=processed_data.get("components"),
-        styles=processed_data.get("styles"),
-        metadata=processed_data.get("metadata", {}),
-        is_published=processed_data.get("is_published", False)
+        title=page_data.get("title", "Neue Seite"),
+        slug=page_data.get("slug", f"page-{datetime.now().strftime('%Y%m%d-%H%M%S')}"),
+        description=page_data.get("description"),
+        html_content=page_data.get("html_content"),
+        css_content=page_data.get("css_content"),
+        js_content=page_data.get("js_content"),
+        components=page_data.get("components"),
+        styles=page_data.get("styles"),
+        page_metadata=page_data.get("metadata", {}),
+        is_published=page_data.get("is_published", False)
     )
     
     db.add(new_page)
@@ -85,8 +80,8 @@ async def create_page(page_data: Dict[str, Any], db: Session = Depends(get_db)):
     db.refresh(new_page)
     
     # Abschnitte hinzufügen, falls vorhanden
-    if "sections" in processed_data and isinstance(processed_data["sections"], list):
-        for i, section_data in enumerate(processed_data["sections"]):
+    if "sections" in page_data and isinstance(page_data["sections"], list):
+        for i, section_data in enumerate(page_data["sections"]):
             section = PageSection(
                 page_id=new_page.id,
                 name=section_data.get("name", f"Abschnitt {i+1}"),
@@ -115,24 +110,24 @@ async def update_page(page_id: int, page_data: Dict[str, Any], db: Session = Dep
         if db.query(Page).filter(Page.slug == page_data["slug"]).first():
             raise HTTPException(status_code=400, detail="Slug wird bereits verwendet")
     
-    # Plugins die Möglichkeit geben, die Daten zu verarbeiten
-    processed_data = plugin_manager.process_page_save(page_data)
-    
     # Seite aktualisieren
-    for key, value in processed_data.items():
+    for key, value in page_data.items():
         if key != "id" and key != "sections" and hasattr(page, key):
-            setattr(page, key, value)
+            if key == "metadata":
+                setattr(page, "page_metadata", value)
+            else:
+                setattr(page, key, value)
     
     db.commit()
     db.refresh(page)
     
     # Abschnitte aktualisieren, falls vorhanden
-    if "sections" in processed_data and isinstance(processed_data["sections"], list):
+    if "sections" in page_data and isinstance(page_data["sections"], list):
         # Bestehende Abschnitte löschen
         db.query(PageSection).filter(PageSection.page_id == page_id).delete()
         
         # Neue Abschnitte hinzufügen
-        for i, section_data in enumerate(processed_data["sections"]):
+        for i, section_data in enumerate(page_data["sections"]):
             section = PageSection(
                 page_id=page.id,
                 name=section_data.get("name", f"Abschnitt {i+1}"),
@@ -177,19 +172,22 @@ async def export_page(
     if page is None:
         raise HTTPException(status_code=404, detail="Seite nicht gefunden")
     
-    # Seite exportieren
-    export_dir = page_exporter.export_page(page)
-    
-    # Optional: ZIP-Archiv erstellen
-    zip_path = None
-    if create_zip:
-        zip_path = page_exporter.create_zip_archive(export_dir)
-    
-    return {
-        "message": f"Seite '{page.title}' wurde exportiert",
-        "export_dir": export_dir,
-        "zip_path": zip_path
-    }
+    try:
+        # Seite exportieren
+        export_dir = page_exporter.export_page(page)
+        
+        # Optional: ZIP-Archiv erstellen
+        zip_path = None
+        if create_zip:
+            zip_path = page_exporter.create_zip_archive(export_dir)
+        
+        return {
+            "message": f"Seite '{page.title}' wurde exportiert",
+            "export_dir": export_dir,
+            "zip_path": zip_path
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Fehler beim Export: {str(e)}")
 
 @router.get("/{page_id}/download", response_class=FileResponse)
 async def download_page_export(page_id: int, db: Session = Depends(get_db)):
@@ -201,91 +199,16 @@ async def download_page_export(page_id: int, db: Session = Depends(get_db)):
     if page is None:
         raise HTTPException(status_code=404, detail="Seite nicht gefunden")
     
-    # Exportverzeichnis ermitteln
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    exports_dir = os.path.join(base_dir, "exports")
-    
-    # Neuestes Export-Verzeichnis für diese Seite finden
-    page_exports = [d for d in os.listdir(exports_dir) if d.startswith(f"{page.slug}_")]
-    if not page_exports:
-        # Falls kein Export vorhanden ist, einen erstellen
+    try:
+        # Seite exportieren und ZIP erstellen
         export_dir = page_exporter.export_page(page)
         zip_path = page_exporter.create_zip_archive(export_dir)
-    else:
-        # Neuesten Export verwenden
-        latest_export = sorted(page_exports)[-1]
-        export_dir = os.path.join(exports_dir, latest_export)
         
-        # ZIP-Datei erstellen, falls sie nicht existiert
-        zip_path = f"{export_dir}.zip"
-        if not os.path.exists(zip_path):
-            zip_path = page_exporter.create_zip_archive(export_dir)
-    
-    # ZIP-Datei zurückgeben
-    return FileResponse(
-        path=zip_path,
-        filename=f"{page.slug}.zip",
-        media_type="application/zip"
-    )
-
-@router.post("/generate", response_model=Dict[str, Any])
-async def generate_page_content(
-    generation_params: Dict[str, Any],
-    db: Session = Depends(get_db)
-):
-    """
-    Generiert Inhalte für eine Landingpage mit KI.
-    """
-    try:
-        # Parameter extrahieren
-        target_audience = generation_params.get("target_audience", "")
-        industry = generation_params.get("industry", "")
-        page_goal = generation_params.get("page_goal", "")
-        additional_info = generation_params.get("additional_info", "")
-        
-        # Inhalte generieren
-        content = content_generator.generate_landing_page_content(
-            target_audience=target_audience,
-            industry=industry,
-            page_goal=page_goal,
-            additional_info=additional_info
+        # ZIP-Datei zurückgeben
+        return FileResponse(
+            path=zip_path,
+            filename=f"{page.slug}.zip",
+            media_type="application/zip"
         )
-        
-        return {
-            "success": True,
-            "content": content
-        }
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
-
-@router.post("/generate-section", response_model=Dict[str, Any])
-async def generate_section_content(
-    section_params: Dict[str, Any],
-    db: Session = Depends(get_db)
-):
-    """
-    Generiert Inhalte für einen bestimmten Abschnitt einer Landingpage mit KI.
-    """
-    try:
-        # Parameter extrahieren
-        section_type = section_params.get("section_type", "hero")
-        context = section_params.get("context", {})
-        
-        # Inhalte generieren
-        content = content_generator.generate_section_content(
-            section_type=section_type,
-            context=context
-        )
-        
-        return {
-            "success": True,
-            "content": content
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        raise HTTPException(status_code=500, detail=f"Fehler beim Download: {str(e)}")
