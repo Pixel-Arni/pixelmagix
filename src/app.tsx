@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster } from '@/components/ui/toast-provider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { AppLayout } from '@/components/layout/app-layout'
 

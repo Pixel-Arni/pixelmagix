@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useToast } from '@/components/ui/toaster'
+import { useToast } from '@/components/ui/toast-provider'
 
 // Types für den Visual Builder
 interface Section {

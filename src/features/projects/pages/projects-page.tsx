@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, StatsCard } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { SearchInput } from '@/components/ui/input'
-import { useToast } from '@/components/ui/toaster'
+import { useToast } from '@/components/ui/toast-provider'
 import { cn, formatDate, formatRelativeTime } from '@/lib/utils'
 
 // Mock Data - später durch echte API-Calls ersetzen
