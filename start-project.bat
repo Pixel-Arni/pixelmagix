@@ -1,4 +1,14 @@
 @echo off
+
+REM Prüfen, ob das Skript bereits in einer persistenten CMD-Instanz läuft
+if "%PERSISTENT_CMD%"=="1" goto :main
+
+REM Starte das Skript in einer neuen CMD-Instanz, die offen bleibt
+set PERSISTENT_CMD=1
+cmd /k "%~f0"
+exit /b
+
+:main
 echo ===== Pixelmagix Projekt Starter =====
 echo.
 
@@ -28,8 +38,7 @@ echo npm gefunden:
 npm --version
 echo.
 
-REM Ins Projektverzeichnis wechseln
-cd /d "%~dp0"
+REM Arbeitsverzeichnis anzeigen (ohne zu wechseln)
 echo Arbeitsverzeichnis: %CD%
 echo.
 
@@ -47,11 +56,14 @@ if not exist node_modules (
 )
 
 echo.
-echo Starte den Entwicklungsserver...
+echo Starte den Entwicklungsserver und öffne den Browser...
 echo.
 echo Drücken Sie Strg+C, um den Server zu beenden.
 echo.
 
-npm run dev
+REM Starte den Server im aktuellen Fenster und öffne den Browser automatisch
+npx vite --open
 
-pause
+echo.
+echo Der Server wurde beendet. Drücken Sie eine beliebige Taste, um das Fenster zu schließen.
+pause > nul
