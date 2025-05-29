@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import App from './App.tsx'
+import { ToastProvider } from '@/components/ui/toaster'
 import '@/styles/globals.css'
 
 // Query Client für Server State Management
@@ -109,7 +110,9 @@ root.render(
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <App />
+          <ToastProvider>
+            <App />
+          </ToastProvider>
         </BrowserRouter>
         {__DEV__ && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>

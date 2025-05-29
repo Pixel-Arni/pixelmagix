@@ -149,10 +149,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       )
     }
 
-    return textareaElement
+    return inputElement
   }
 )
-Textarea.displayName = 'Textarea'
+Input.displayName = 'Input'
 
 // File Input Komponente
 export interface FileInputProps extends Omit<InputProps, 'type' | 'value' | 'onChange'> {
@@ -316,46 +316,7 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
 )
 FileInput.displayName = 'FileInput'
 
-export { Input, SearchInput, Textarea, FileInput, inputVariants } 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  {error}
-                </p>
-              )}
-              {success && (
-                <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
-                  <svg
-                    className="w-3 h-3 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  {success}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    return inputElement
-  }
-)
-Input.displayName = 'Input'
+export { Input, SearchInput, Textarea, FileInput, inputVariants }
 
 // Search Input Komponente
 export interface SearchInputProps extends Omit<InputProps, 'leftIcon' | 'type'> {
