@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Pixelmagix - KI-gestützte Landingpage-Software</title>
+    <meta name="description" content="Professionelle Landingpage-Erstellung für Agenturen und Freelancer mit KI-Unterstützung" />
+    <meta name="keywords" content="Landingpage, Website, Design, KI, Agentur, Freelancer" />
+    <meta name="author" content="Pixelmagix" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Pixelmagix - KI-gestützte Landingpage-Software" />
+    <meta property="og:description" content="Professionelle Landingpage-Erstellung für Agenturen und Freelancer mit KI-Unterstützung" />
+    <meta property="og:url" content="https://pixelmagix.dev" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="Pixelmagix - KI-gestützte Landingpage-Software" />
+    <meta property="twitter:description" content="Professionelle Landingpage-Erstellung für Agenturen und Freelancer mit KI-Unterstützung" />
+    
+    <!-- Theme Color für Mobile Browser -->
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- Manifest für PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Preconnect für Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Prevent FOUC (Flash of Unstyled Content) -->
+    <style>
+      html {
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+    </style>
+    
+    <!-- Inline Critical CSS für bessere Performance -->
+    <style>
+      /* Reset */
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      /* Root Variables */
+      :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+        --pixelmagix-primary: 199 89% 48%;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
+      
+      .dark {
+        --background: 222.2 84% 4.9%;
+        --foreground: 210 40% 98%;
+      }
+      
+      /* Base Styles */
+      body {
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-feature-settings: "rlig" 1, "calt" 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      
+      /* Loading Screen */
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: hsl(var(--background));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .loader {
+        width: 40px;
+        height: 40px;
+        border: 3px solid hsl(var(--pixelmagix-primary) / 0.2);
+        border-top: 3px solid hsl(var(--pixelmagix-primary));
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Show content after JS loads */
+      .loaded {
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loading">
+      <div class="loader"></div>
+    </div>
+    
+    <!-- React Root -->
+    <div id="root"></div>
+    
+    <!-- No JavaScript Fallback -->
+    <noscript>
+      <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        font-family: system-ui, sans-serif;
+        text-align: center;
+        padding: 2rem;
+      ">
+        <h1 style="color: #0ea5e9; margin-bottom: 1rem;">Pixelmagix</h1>
+        <p style="color: #64748b; margin-bottom: 2rem;">
+          JavaScript ist erforderlich, um Pixelmagix zu verwenden.<br>
+          Bitte aktivieren Sie JavaScript in Ihrem Browser.
+        </p>
+        <button onclick="location.reload()" style="
+          background: #0ea5e9;
+          color: white;
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          font-size: 1rem;
+        ">
+          Seite neu laden
+        </button>
+      </div>
+    </noscript>
+    
+    <!-- Main App Script -->
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Remove Loading Screen and Show Content -->
+    <script>
+      // Remove loading screen after a brief delay
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const loading = document.getElementById('loading');
+          const html = document.documentElement;
+          
+          if (loading) {
+            loading.style.opacity = '0';
+            setTimeout(() => {
+              loading.remove();
+              html.classList.add('loaded');
+            }, 200);
+          } else {
+            html.classList.add('loaded');
+          }
+        }, 100);
+      });
+      
+      // Fallback if load event doesn't fire
+      setTimeout(() => {
+        const html = document.documentElement;
+        html.classList.add('loaded');
+        const loading = document.getElementById('loading');
+        if (loading) loading.remove();
+      }, 3000);
+    </script>
+  </body>
+</html>
