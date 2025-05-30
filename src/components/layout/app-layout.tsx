@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Outlet, useLocation, Link } from 'react-router-dom'
-import { cn } from '@/lib/utils'
-import { ThemeToggle } from '@/components/providers/theme-provider'
+import { cn } from '../../lib/utils'
+import { ThemeToggle } from '../providers/theme-provider'
 
 // Icons - später durch lucide-react ersetzen
 const Icons = {

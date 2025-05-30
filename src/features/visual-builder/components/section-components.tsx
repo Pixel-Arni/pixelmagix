@@ -1,10 +1,10 @@
 import React from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '../../../lib/utils'
+import { Button } from '../../../components/ui/button'
+import { Input } from '../../../components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 
 // Types
 interface Section {

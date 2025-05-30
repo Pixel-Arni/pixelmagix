@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle, StatsCard } from '@/components/ui/card'
-import { Button, IconButton, ButtonGroup } from '@/components/ui/button'
-import { Input, Textarea } from '@/components/ui/input'
-import { useToast } from '@/components/ui/toast-provider'
+import { Card, CardContent, CardHeader, CardTitle, StatsCard } from '../../../components/ui/card'
+import { Button, IconButton, ButtonGroup } from '../../../components/ui/button'
+import { Input, Textarea } from '../../../components/ui/input'
+import { useToast } from '../../../components/ui/toast'
 
 // Mock Customer Data - später durch echte API-Calls ersetzen
 const mockCustomer = {

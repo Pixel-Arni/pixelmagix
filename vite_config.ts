@@ -43,6 +43,6 @@ export default defineConfig({
   },
   define: {
     // Für Electron-Integration falls später benötigt
-    __DEV__: JSON.stringify(process.env.NODE_ENV === 'development'),
+
   },
 })

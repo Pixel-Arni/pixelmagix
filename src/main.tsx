@@ -4,9 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import App from './App.tsx'
-import { ToastProvider } from '@/components/ui/toast-provider'
-import '@/styles/globals.css'
+import App from './app.tsx'
+import { ToastProvider } from './components/ui/toast'
+import './styles/globals.css'
 
 // Query Client für Server State Management
 const queryClient = new QueryClient({
@@ -77,7 +77,7 @@ class ErrorBoundary extends React.Component<
             >
               Seite neu laden
             </button>
-            {__DEV__ && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details className="mt-4 text-sm text-gray-500">
                 <summary className="cursor-pointer">Technische Details</summary>
                 <pre className="mt-2 whitespace-pre-wrap bg-gray-100 p-2 rounded text-xs">
@@ -114,7 +114,7 @@ root.render(
             <App />
           </ToastProvider>
         </BrowserRouter>
-        {__DEV__ && <ReactQueryDevtools initialIsOpen={false} />}
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
     </ErrorBoundary>
   </React.StrictMode>

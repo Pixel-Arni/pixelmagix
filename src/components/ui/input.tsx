@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { cn } from '@/lib/utils'
+import { cn } from "../../lib/utils";
 
 const inputVariants = cva(
   'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
@@ -137,6 +137,24 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  {error}
+                </p>
+              )}
+              {success && (
+                <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                  <svg
+                    className="w-3 h-3 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
@@ -153,170 +171,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 )
 Input.displayName = 'Input'
-
-// File Input Komponente
-export interface FileInputProps extends Omit<InputProps, 'type' | 'value' | 'onChange'> {
-  accept?: string
-  multiple?: boolean
-  maxSize?: number // in bytes
-  onFileSelect?: (files: FileList | null) => void
-  onError?: (error: string) => void
-  preview?: boolean
-}
-
-const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
-  ({ 
-    accept,
-    multiple = false,
-    maxSize,
-    onFileSelect,
-    onError,
-    preview = false,
-    className,
-    ...props 
-  }, ref) => {
-    const [dragActive, setDragActive] = React.useState(false)
-    const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null)
-
-    const validateFiles = (files: FileList): boolean => {
-      if (!maxSize) return true
-
-      for (let i = 0; i < files.length; i++) {
-        if (files[i].size > maxSize) {
-          onError?.(`Datei "${files[i].name}" ist zu groß. Maximum: ${Math.round(maxSize / 1024 / 1024)}MB`)
-          return false
-        }
-      }
-      return true
-    }
-
-    const handleFiles = (files: FileList | null) => {
-      if (!files) return
-
-      if (validateFiles(files)) {
-        setSelectedFiles(files)
-        onFileSelect?.(files)
-      }
-    }
-
-    const handleDrag = (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      if (e.type === 'dragenter' || e.type === 'dragover') {
-        setDragActive(true)
-      } else if (e.type === 'dragleave') {
-        setDragActive(false)
-      }
-    }
-
-    const handleDrop = (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setDragActive(false)
-      
-      if (e.dataTransfer.files) {
-        handleFiles(e.dataTransfer.files)
-      }
-    }
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      handleFiles(e.target.files)
-    }
-
-    return (
-      <div className="space-y-2">
-        <div
-          className={cn(
-            'relative border-2 border-dashed rounded-lg p-6 transition-colors',
-            dragActive 
-              ? 'border-pixelmagix-500 bg-pixelmagix-50 dark:bg-pixelmagix-950' 
-              : 'border-muted-foreground/25 hover:border-muted-foreground/50',
-            className
-          )}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <div className="text-center">
-            <svg
-              className="mx-auto h-12 w-12 text-muted-foreground"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              />
-            </svg>
-            <div className="mt-4">
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <span className="mt-2 block text-sm font-medium text-foreground">
-                  Dateien hierher ziehen oder klicken zum Auswählen
-                </span>
-                <input
-                  ref={ref}
-                  id="file-upload"
-                  type="file"
-                  className="sr-only"
-                  accept={accept}
-                  multiple={multiple}
-                  onChange={handleChange}
-                  {...props}
-                />
-              </label>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {accept && `Unterstützte Formate: ${accept}`}
-                {maxSize && ` • Max. ${Math.round(maxSize / 1024 / 1024)}MB`}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* File Preview */}
-        {preview && selectedFiles && (
-          <div className="space-y-2">
-            {Array.from(selectedFiles).map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-2 bg-muted rounded border"
-              >
-                <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span className="text-sm text-foreground">{file.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    ({Math.round(file.size / 1024)} KB)
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    // File entfernen (vereinfacht)
-                    setSelectedFiles(null)
-                    onFileSelect?.(null)
-                  }}
-                  className="text-muted-foreground hover:text-destructive transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    )
-  }
-)
-FileInput.displayName = 'FileInput'
-
-export { Input, SearchInput, Textarea, FileInput, inputVariants }
 
 // Search Input Komponente
 export interface SearchInputProps extends Omit<InputProps, 'leftIcon' | 'type'> {
@@ -483,4 +337,27 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
                     className="w-3 h-3 mr-1"
                     fill="none"
                     stroke="currentColor"
-                    viewBox="0 0 24
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  {success}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    return textareaElement
+  }
+)
+Textarea.displayName = 'Textarea'
+
+export { Input, SearchInput, Textarea, inputVariants }

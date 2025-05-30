@@ -1,21 +1,21 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Toaster } from '@/components/ui/toast-provider'
-import { ThemeProvider } from '@/components/providers/theme-provider'
-import { AppLayout } from '@/components/layout/app-layout'
+import { Toaster } from './components/ui/toast'
+import { ThemeProvider } from './components/providers/theme-provider'
+import { AppLayout } from './components/layout/app-layout'
 
 // Feature Pages (Lazy Loading für bessere Performance)
 import { lazy, Suspense } from 'react'
 
 // Lazy-loaded Components
-const Dashboard = lazy(() => import('@/features/dashboard/pages/dashboard-page'))
-const Customers = lazy(() => import('@/features/customers/pages/customers-page'))
-const CustomerDetail = lazy(() => import('@/features/customers/pages/customer-detail-page'))
-const Projects = lazy(() => import('@/features/projects/pages/projects-page'))
-const ProjectDetail = lazy(() => import('@/features/projects/pages/project-detail-page'))
-const VisualBuilder = lazy(() => import('@/features/visual-builder/pages/visual-builder-page'))
-const Templates = lazy(() => import('@/features/templates/pages/templates-page'))
-const Invoices = lazy(() => import('@/features/invoices/pages/invoices-page'))
-const Settings = lazy(() => import('@/features/settings/pages/settings-page'))
+const Dashboard = lazy(() => import('./features/dashboard/pages/dashboard-page'))
+const Customers = lazy(() => import('./features/customers/pages/customers-page'))
+const CustomerDetail = lazy(() => import('./features/customers/pages/customer-detail-page'))
+const Projects = lazy(() => import('./features/projects/pages/projects-page'))
+const ProjectDetail = lazy(() => import('./features/projects/pages/project-detail-page'))
+const VisualBuilder = lazy(() => import('./features/visual-builder/pages/visual-builder-page'))
+const Templates = lazy(() => import('./features/templates/pages/templates-page'))
+const Invoices = lazy(() => import('./features/invoices/pages/invoices-page'))
+const Settings = lazy(() => import('./features/settings/pages/settings-page'))
 
 // Loading Spinner Component
 const PageLoader = () => (

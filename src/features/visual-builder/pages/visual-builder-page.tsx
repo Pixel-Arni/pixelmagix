@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useToast } from '@/components/ui/toast-provider'
+import { cn } from '../../../lib/utils'
+import { Button } from '../../../components/ui/button'
+import { Input } from '../../../components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { useToast } from '../../../components/ui/toast'
 
 // Types für den Visual Builder
 interface Section {

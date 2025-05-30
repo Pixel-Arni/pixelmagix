@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useToast } from '@/components/ui/toast-provider'
+import { Button } from '../../../components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { useToast } from '../../../components/ui/toast'
 
 // Mock-Daten für ein Projekt
 interface Project {

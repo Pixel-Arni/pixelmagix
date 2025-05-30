@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { SearchInput } from '@/components/ui/input'
-import { useToast } from '@/components/ui/toast-provider'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Button } from '../../../components/ui/button'
+import { SearchInput } from '../../../components/ui/input'
+import { useToast } from '../../../components/ui/toast'
 
 // Mock Data - später durch echte API-Calls ersetzen
 const mockCustomers = [
