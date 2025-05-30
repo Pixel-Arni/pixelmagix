@@ -212,6 +212,12 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
         setInternalValue('')
       }
       onClear?.()
+      // Create a synthetic event for the onChange handler
+      const syntheticEvent = {
+        target: { value: '' },
+        currentTarget: { value: '' },
+      } as React.ChangeEvent<HTMLInputElement>
+      onChange?.(syntheticEvent)
     }
 
     const currentValue = isControlled ? value : internalValue

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
-import { useToast } from '../../../components/ui/toast-provider'
+import { useToast } from '../../../components/ui/toast'
 
 // Mock-Daten für Templates
 interface Template {
@@ -79,7 +79,7 @@ const categories = [
 
 export default function TemplatesPage() {
   const navigate = useNavigate()
-  const { toast } = useToast()
+  const { success, error } = useToast()
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -95,16 +95,16 @@ export default function TemplatesPage() {
         
         // Verwende Mock-Daten
         setTemplates(mockTemplates)
-      } catch (error) {
-        toast.error('Fehler beim Laden der Templates', 'Bitte versuchen Sie es später erneut.')
-        console.error('Error fetching templates:', error)
+      } catch (err) {
+        error('Fehler beim Laden der Templates', 'Bitte versuchen Sie es später erneut.')
+        console.error('Error fetching templates:', err)
       } finally {
         setLoading(false)
       }
     }
 
     fetchTemplates()
-  }, [toast])
+  }, [error])
 
   // Filter-Logik
   const filteredTemplates = templates.filter(template => {
@@ -117,7 +117,7 @@ export default function TemplatesPage() {
 
   const handleUseTemplate = (templateId: string) => {
     // In einer echten Anwendung würde hier ein neues Projekt mit diesem Template erstellt
-    toast.success('Template ausgewählt', 'Ein neues Projekt wird erstellt...')
+    success('Template ausgewählt', 'Ein neues Projekt wird erstellt...')
     
     // Simuliere Verzögerung und Navigation
     setTimeout(() => {

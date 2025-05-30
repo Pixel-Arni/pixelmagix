@@ -82,10 +82,17 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
   
   html {
     scroll-behavior: smooth;
+  }
+  
+  /* Prevent FOUC */
+  html {
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   
   /* Custom Scrollbar */
@@ -121,15 +128,15 @@
   }
   
   .sidebar {
-    @apply fixed left-0 top-0 z-40 h-screen w-[var(--sidebar-width)] bg-card border-r border-border;
+    @apply fixed left-0 top-0 z-40 h-screen w-[var(--sidebar-width)] bg-card border-r border-border transition-transform duration-300 lg:translate-x-0;
   }
   
   .main-content {
-    @apply ml-[var(--sidebar-width)] min-h-screen;
+    @apply ml-0 lg:ml-[var(--sidebar-width)] min-h-screen transition-all duration-300;
   }
   
   .header {
-    @apply h-[var(--header-height)] bg-card border-b border-border px-6 flex items-center justify-between;
+    @apply h-[var(--header-height)] bg-card border-b border-border px-6 flex items-center justify-between sticky top-0 z-30;
   }
   
   .content-area {
@@ -291,9 +298,9 @@
 }
 
 /* ===== RESPONSIVE UTILITIES ===== */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .sidebar {
-    @apply -translate-x-full transition-transform;
+    @apply -translate-x-full;
   }
   
   .sidebar.open {
@@ -318,4 +325,49 @@
   .print-only {
     @apply block;
   }
+}
+
+/* ===== FIX FOR MISSING TAILWIND CLASSES ===== */
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fadeIn;
+  animation-duration: 0.3s;
+}
+
+.slide-in-from-bottom-4 {
+  animation-name: slideInFromBottom;
+  animation-duration: 0.3s;
+}
+
+.slide-in-from-right-full {
+  animation-name: slideInFromRight;
+  animation-duration: 0.3s;
+}
+
+.zoom-in-95 {
+  animation-name: zoomIn;
+  animation-duration: 0.2s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromBottom {
+  from { transform: translateY(1rem); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInFromRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }

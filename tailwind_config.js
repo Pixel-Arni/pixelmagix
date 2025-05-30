@@ -6,6 +6,7 @@ module.exports = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
+    './index.html',
   ],
   prefix: "",
   theme: {
@@ -72,8 +73,8 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Monaco', 'Consolas', 'monospace'],
       },
       fontSize: {
         'xs': ['0.75rem', { lineHeight: '1rem' }],
@@ -121,5 +122,22 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    // Custom plugin für Pixelmagix
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.text-gradient': {
+          'background': 'linear-gradient(to right, theme(colors.pixelmagix.600), theme(colors.pixelmagix.800))',
+          'background-clip': 'text',
+          '-webkit-background-clip': 'text',
+          'color': 'transparent',
+        },
+        '.bg-gradient-pixelmagix': {
+          'background': 'linear-gradient(135deg, theme(colors.pixelmagix.500), theme(colors.pixelmagix.700))',
+        },
+      }
+      addUtilities(newUtilities)
+    }
+  ],
 }
