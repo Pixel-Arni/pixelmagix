@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ===== PIXELMAGIX CSS OHNE TAILWIND ===== */
 /* Diese CSS funktioniert direkt ohne PostCSS/Tailwind Kompilierung */
 
