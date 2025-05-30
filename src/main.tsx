@@ -6,7 +6,11 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import App from './app.tsx'
 import { ToastProvider } from './components/ui/toast'
+
+// WICHTIG: CSS Import - überprüfe ob diese Datei existiert
 import './styles/globals.css'
+
+console.log('CSS Import erfolgreich') // Debug-Log
 
 // Query Client für Server State Management
 const queryClient = new QueryClient({
@@ -42,45 +46,75 @@ class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Pixelmagix Error:', error, errorInfo)
-    // Hier könnte später Error-Reporting hinzugefügt werden
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-              <svg
-                className="w-6 h-6 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.962-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
+        <div style={{ 
+          minHeight: '100vh', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: '#f8fafc',
+          fontFamily: 'system-ui, sans-serif'
+        }}>
+          <div style={{ 
+            maxWidth: '28rem', 
+            width: '100%', 
+            backgroundColor: 'white', 
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', 
+            borderRadius: '0.5rem', 
+            padding: '1.5rem',
+            textAlign: 'center'
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              width: '3rem', 
+              height: '3rem', 
+              margin: '0 auto 1rem', 
+              backgroundColor: '#fee2e2', 
+              borderRadius: '50%' 
+            }}>
+              <span style={{ color: '#dc2626', fontSize: '1.5rem' }}>⚠️</span>
             </div>
-            <h1 className="text-xl font-semibold text-gray-900 text-center mb-2">
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#111827', marginBottom: '0.5rem' }}>
               Etwas ist schiefgelaufen
             </h1>
-            <p className="text-gray-600 text-center mb-4">
+            <p style={{ color: '#6b7280', marginBottom: '1rem' }}>
               Pixelmagix hat einen unerwarteten Fehler festgestellt.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="w-full bg-pixelmagix-600 hover:bg-pixelmagix-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+              style={{ 
+                width: '100%', 
+                backgroundColor: '#0ea5e9', 
+                color: 'white', 
+                fontWeight: '500', 
+                padding: '0.5rem 1rem', 
+                borderRadius: '0.375rem', 
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0284c7'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#0ea5e9'}
             >
               Seite neu laden
             </button>
             {import.meta.env.DEV && this.state.error && (
-              <details className="mt-4 text-sm text-gray-500">
-                <summary className="cursor-pointer">Technische Details</summary>
-                <pre className="mt-2 whitespace-pre-wrap bg-gray-100 p-2 rounded text-xs">
+              <details style={{ marginTop: '1rem', textAlign: 'left', fontSize: '0.75rem', color: '#6b7280' }}>
+                <summary style={{ cursor: 'pointer' }}>Technische Details</summary>
+                <pre style={{ 
+                  marginTop: '0.5rem', 
+                  whiteSpace: 'pre-wrap', 
+                  backgroundColor: '#f3f4f6', 
+                  padding: '0.5rem', 
+                  borderRadius: '0.25rem',
+                  fontSize: '0.625rem'
+                }}>
                   {this.state.error.stack}
                 </pre>
               </details>
