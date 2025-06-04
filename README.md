@@ -102,21 +102,20 @@ Die Anwendung läuft auf `http://localhost:3000`
 pixelmagix/
 ├── 📁 src/
 │   ├── 📁 components/        # UI-Komponenten
-│   │   ├── 📁 ui/           # shadcn/ui Basis
-│   │   ├── 📁 forms/        # Formular-Komponenten
-│   │   └── 📁 layout/       # Layout-Komponenten
+│   │   ├── 📁 layout/        # Layout-Komponenten
+│   │   ├── 📁 providers/     # Kontext Provider
+│   │   └── 📁 ui/            # shadcn/ui Basis
 │   ├── 📁 features/         # Feature-Module
-│   │   ├── 📁 customers/    # Kundenverwaltung
-│   │   ├── 📁 projects/     # Projektmanagement
-│   │   ├── 📁 visual-builder/ # Visual Editor
-│   │   └── 📁 ai-integration/ # KI-Features
-│   ├── 📁 lib/              # Utilities
-│   │   ├── 📁 database/     # Prisma Client
-│   │   ├── 📁 ai/          # KI-Provider
-│   │   └── 📁 export/      # Export-Logik
-│   └── 📁 hooks/           # Custom Hooks
-├── 📁 prisma/              # Datenbank-Schema
-└── 📁 templates/           # Landingpage-Templates
+│   │   ├── 📁 customers/     # Kundenverwaltung
+│   │   ├── 📁 dashboard/     # Dashboard
+│   │   ├── 📁 invoices/      # Rechnungsverwaltung
+│   │   ├── 📁 projects/      # Projektmanagement
+│   │   ├── 📁 settings/      # Nutzer-Einstellungen
+│   │   ├── 📁 templates/     # Landingpage-Templates
+│   │   └── 📁 visual-builder/ # Visual Editor
+│   ├── 📁 lib/               # Utilities
+│   └── 📁 styles/            # Globale Styles
+├── 📁 prisma/               # Datenbank-Schema
 ```
 
 ## 🎨 Entwicklung
