@@ -231,7 +231,7 @@ const response = await generateLayout({
 
 ## 📝 License
 
-Dieses Projekt ist unter der MIT License lizensiert - siehe [LICENSE](LICENSE) für Details.
+Dieses Projekt ist unter der MIT License lizenziert - siehe [LICENSE](LICENSE) für Details.
 
 ## 💬 Support
 
