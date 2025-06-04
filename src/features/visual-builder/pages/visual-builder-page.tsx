@@ -7,6 +7,12 @@ import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { useToast } from '../../../components/ui/toast'
+import {
+  SectionRenderer,
+  SectionsPanel,
+  PropertiesPanel,
+  AIPanel,
+} from '../components/section-components'
 
 // Types für den Visual Builder
 interface Section {
@@ -566,5 +572,3 @@ function getDefaultStyles(type: Section['type']): Record<string, any> {
       return baseStyles
   }
 }
-
-import { SectionRenderer, SectionsPanel, PropertiesPanel, AIPanel } from '../components/section-components'
