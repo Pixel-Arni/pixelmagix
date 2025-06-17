@@ -10,7 +10,9 @@ TEMPLATES_DIR = Path(__file__).parent / "templates"
 _env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
 
 
-def build_landing_page(title: str, output_path: str, context: dict[str, Any] | None = None) -> None:
+def build_landing_page(
+    title: str, output_path: str, context: dict[str, Any] | None = None
+) -> None:
     """Render the default template with provided context."""
     context = context or {}
     context.setdefault("title", title)
