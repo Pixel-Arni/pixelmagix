@@ -31,6 +31,19 @@ Pixelmagix ist eine lokal laufende, KI-gestützte Software zur professionellen E
    ```
 
 
+## ⚙️ Codex-Umgebung
+
+Um Pixelmagix in Codex auszufuehren, lege eine Datei `codex.yaml` im Projektwurzelverzeichnis an:
+
+```yaml
+setup:
+  - pip install -r requirements.txt
+test: pytest
+```
+
+Lade anschliessend das Repository in Codex, um die Abhaengigkeiten automatisch zu installieren und die Tests auszufuehren.
+
+
 
 ## 📦 Export-Funktionen
 
