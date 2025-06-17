@@ -30,6 +30,17 @@ Pixelmagix ist eine lokal laufende, KI-gestützte Software zur professionellen E
    python -m pixelmagix export output site.zip
    ```
 
+### 🖥️ GUI starten
+
+Eine einfache grafische Oberfläche lässt sich mit folgendem Befehl öffnen:
+
+```bash
+python -m pixelmagix.gui
+```
+
+Die Oberfläche bietet Buttons zum Initialisieren der Datenbank, Anlegen von
+Kunden sowie zum Bauen und Exportieren von Landingpages.
+
 
 ## ⚙️ Codex-Umgebung
 
