@@ -26,9 +26,19 @@ Pixelmagix ist eine lokal laufende, KI-gestützte Software zur professionellen E
    ```
 3. Landingpage bauen und exportieren:
    ```bash
-   python -m pixelmagix build "Mein Projekt" output/index.html
-   python -m pixelmagix export output site.zip
-   ```
+python -m pixelmagix build "Mein Projekt" output/index.html
+python -m pixelmagix export output site.zip
+```
+
+### 🛠️ CLI starten
+
+Alle Funktionen von Pixelmagix lassen sich direkt über die Kommandozeile aufrufen. Eine Übersicht aller verfügbaren Befehle erhältst du mit:
+
+```bash
+python -m pixelmagix --help
+```
+
+Anschließend kannst du einzelne Kommandos nach dem Muster `python -m pixelmagix <befehl>` ausführen.
 
 ### 🖥️ GUI starten
 
