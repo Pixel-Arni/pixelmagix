@@ -38,6 +38,13 @@ Eine einfache grafische Oberfläche lässt sich mit folgendem Befehl öffnen:
 python -m pixelmagix.gui
 ```
 
+Alternativ kann auch das Skript `start_gui.py` verwendet werden, das zuvor die
+benötigten Abhängigkeiten installiert und anschließend die Oberfläche startet:
+
+```bash
+python start_gui.py
+```
+
 Die Oberfläche bietet Buttons zum Initialisieren der Datenbank, Anlegen von
 Kunden sowie zum Bauen und Exportieren von Landingpages.
 
