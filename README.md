@@ -13,6 +13,23 @@ Pixelmagix ist eine lokal laufende, KI-gestützte Software zur professionellen E
 - 💰 **Rechnungsstellung** - Integrierte Abrechnung
 - 🔒 **Lokale Datenbank** - Vollständiger Datenschutz
 
+## 🚀 Schnellstart
+
+1. Python-Abhängigkeiten installieren:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Datenbank initialisieren und Testkunden anlegen:
+   ```bash
+   python -m pixelmagix init
+   python -m pixelmagix addcustomer "Max Mustermann" max@example.com
+   ```
+3. Landingpage bauen und exportieren:
+   ```bash
+   python -m pixelmagix build "Mein Projekt" output/index.html
+   python -m pixelmagix export output site.zip
+   ```
+
 
 
 ## 📦 Export-Funktionen
